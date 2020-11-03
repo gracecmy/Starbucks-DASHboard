@@ -4,4 +4,4 @@ Using Dash to create an interactive dashboard to view the nutritional content of
 
 ![ScreenShot](/extras/ss_sb.png)
 
-(http://gracecmy.pythonanywhere.com/)
+(or view at http://gracecmy.pythonanywhere.com/, but it is rather slow)
