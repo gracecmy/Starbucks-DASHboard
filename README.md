@@ -1,7 +1,5 @@
 :coffee:
 
-Using Dash to create an interactive dashboard to view the nutritional content of Starbucks' drinks, and the worldwide locations of Starbucks.
+Using Dash to create an interactive dashboard to view the nutritional content of your customised Starbucks drink, and your nearest Starbucks location.
 
 ![ScreenShot](/extras/ss_sb.png)
-
-(or view at http://gracecmy.pythonanywhere.com/, but it is rather slow)
