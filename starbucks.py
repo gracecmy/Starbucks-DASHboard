@@ -17,10 +17,10 @@ df_map["Address"]= np.where(df_map["Postcode"]==".",(df_map["Street Address"]+",
 df_map.drop(["Brand","Store Number","Street Address","City","State/Province","Country","Postcode","Timezone"],axis=1,inplace=True)
 df_map=df_map.reindex(columns=["Store Name","Address","Phone Number","Ownership Type","Latitude","Longitude"])
 figure_map=px.scatter_geo(data_frame=df_map,lat="Latitude",lon="Longitude",color="Ownership Type",color_discrete_map={"Licensed":"#bcbd22","Joint Venture":"#d62728","Company Owned":"#17becf","Franchise":"#1f77b4"},hover_name="Store Name",hover_data={"Address":True,"Phone Number":True,"Ownership Type":False,"Longitude":False,"Latitude":False},template="ggplot2")
-figure_map.update_layout(title={"text":"Find your nearest Starbucks","x":0.5,"y":0.93,"xanchor":"center","yanchor":"top"},font={"size":12})
+figure_map.update_layout(title={"text":"Find your nearest Starbucks","x":0.5,"y":1,"xanchor":"center","yanchor":"top"},font={"size":12})
 figure_map.update_layout(margin={"t":0,"r":0,"b":0,"l":0})
 figure_map.update_layout({"plot_bgcolor":"rgba(0,0,0,0)","paper_bgcolor":"rgba(0,0,0,0)"})
-figure_map.update_layout(legend={"title":"","orientation":"h","x":0.5,"y":0.9,"xanchor":"center","bgcolor":"rgba(0,0,0,0)"})
+figure_map.update_layout(legend={"title":"","orientation":"h","x":0.5,"y":0.97,"xanchor":"center","bgcolor":"rgba(0,0,0,0)"})
 
 #drinks data
 df=pd.read_csv("starbucks_drinkMenu_expanded.csv")
@@ -39,9 +39,9 @@ app.layout=html.Div([
 
     html.Div([
         html.H1("STARBUCKS",
-                style={"font-family":"Verdana","font-weight":"bold","font-size":"38px","letter-spacing":"7px","height":"50px","padding-top":"30px"}),
+                style={"font-family":"Verdana","color":"darkgreen","font-weight":"bold","font-size":"46px","letter-spacing":"7px","height":"50px","padding-top":"30px"}),
         html.Div("Customise your drink order and discover its nutritional content:",
-                 style={"font-family":"Verdana","text-align":"justify"}),
+                 style={"font-family":"Verdana","color":"darkgreen","font-weight":"bold","font-size":"20px","text-align":"justify"}),
         dcc.Dropdown(id="category_dropdown",options=[{"label":i,"value":i} for i in df["Category"].unique()],placeholder="Select a category",
                      style={"width":"90%","margin-left":"10px","margin-top":"17px"}),
         dcc.Dropdown(id="beverage_dropdown",placeholder="Select a beverage",
@@ -51,14 +51,14 @@ app.layout=html.Div([
         dcc.Dropdown(id="milk_dropdown",placeholder="Select a milk option",
                      style={"width":"90%","margin-left":"10px","margin-top":"17px"}),
         html.Div("Note: this is not an exhaustive list.",
-                 style={"font-family":"Verdana","font-style":"italic","font-size":"10px","margin-top":"9px"})],
+                 style={"font-family":"Verdana","color":"darkgreen","font-style":"italic","font-size":"12px","margin-top":"9px"})],
         style={"display":"inline-block","width":"37%","margin-top":"50px","margin-left":"50px"}),
 
     dcc.Graph(id="map_figure",figure=figure_map,
               style={"display":"inline-block","width":"53%","vertical-align":"top","margin-top":"50px","padding-top":"25px","padding-left":"25px"}), 
 
     html.Div(id="drink_output",
-             style={"font-family":"Verdana","text-align":"center","width":"85%","margin-left":"auto","margin-right":"auto"}),
+             style={"font-family":"Verdana","color":"darkgreen","font-weight":"bold","font-size":"20px","text-align":"center","width":"85%","margin-left":"auto","margin-right":"auto"}),
 
     html.Div([
         html.Div([
@@ -87,7 +87,7 @@ app.layout=html.Div([
             style={"display":"inline-block","width":"20%","height":"600px","vertical-align":"top"})],
         style={"width":"95%","padding-top":"20px","margin-left":"auto","margin-right":"auto","margin-bottom":"50px"})
 
-],style={"background-color":"honeydew"})
+],style={"background-color":"linen"})
 
 
 #update beverage dropdown options
@@ -150,10 +150,9 @@ def update_nutritional_figures(selected_category,selected_beverage,selected_size
         cholesterol="0 (mg)"
 
         df_empty=pd.DataFrame([["Total Fat (g)",0],["Trans Fat (g)",0],["Saturated Fat (g)",0],["Sodium (mg)",0],["Total Carbohydrates (g)",0],["Dietary Fibre (g)",0],["Sugars (g)",0],["Protein (g)",0]],columns=["Nutrition","Amount"])
-        figure_nutrition=px.bar(data_frame=df_empty,x="Nutrition",y="Amount",color="Nutrition",hover_name="Nutrition",hover_data={"Nutrition":False},range_y=[0,10])
+        figure_nutrition=px.bar(data_frame=df_empty,x="Nutrition",y="Amount",color="Nutrition",hover_name="Nutrition",hover_data={"Nutrition":False},labels={"Nutrition":"Nutrition<br>     [Click to remove or<br>doubleclick to highlight<br>a nutrition]"},range_y=[0,10])
         figure_nutrition.update_layout(xaxis_title="",plot_bgcolor="rgba(0,0,0,0)",paper_bgcolor="rgba(0,0,0,0)")
-        figure_nutrition.add_annotation(xref="paper",x=1.35,yref="paper",y=0.09,showarrow=False,text="Click to remove or<br>doubleclick to<br>highlight a nutrition",font={"color":"#c7c7c7"},bordercolor="#c7c7c7",borderwidth=1.1,borderpad=7)
-
+        
         figure_vita=px.pie(values=[100],color_discrete_sequence=["#ededed"],hole=0.5)
         figure_vita.update_traces(textinfo="none")
         figure_vita.update_layout(hovermode=False,margin={"t":10,"r":10,"b":10,"l":10},plot_bgcolor="rgba(0,0,0,0)",paper_bgcolor="rgba(0,0,0,0)",showlegend=False)
@@ -182,10 +181,9 @@ def update_nutritional_figures(selected_category,selected_beverage,selected_size
 
         df_nutrition=dff[["Total Fat (g)","Trans Fat (g)","Saturated Fat (g)","Sodium (mg)","Total Carbohydrates (g)","Dietary Fibre (g)","Sugars (g)","Protein (g)"]]
         df_nutrition=df_nutrition.melt(var_name="Nutrition",value_name="Amount")
-        figure_nutrition=px.bar(data_frame=df_nutrition,x="Nutrition",y="Amount",color="Nutrition",hover_name="Nutrition",hover_data={"Nutrition":False})
+        figure_nutrition=px.bar(data_frame=df_nutrition,x="Nutrition",y="Amount",color="Nutrition",hover_name="Nutrition",hover_data={"Nutrition":False},labels={"Nutrition":"Nutrition<br>     [Click to remove or<br>doubleclick to highlight<br>a nutrition]"})
         figure_nutrition.update_layout(xaxis_title="",plot_bgcolor="rgba(0,0,0,0)",paper_bgcolor="rgba(0,0,0,0)")
-        figure_nutrition.add_annotation(xref="paper",x=1.35,yref="paper",y=0.09,showarrow=False,text="Click to remove or<br>doubleclick to<br>highlight a nutrition",font={"color":"#c7c7c7"},bordercolor="#c7c7c7",borderwidth=1.1,borderpad=7)
-
+        
         df_vita=pd.DataFrame(data=[int(dff["Vitamin A (% DV)"]),100-int(dff["Vitamin A (% DV)"])],index=["Vit","Nil"],columns=["Percent"])
         figure_vita=px.pie(data_frame=df_vita,names=df_vita.index,values="Percent",color=df_vita.index,color_discrete_map={df_vita.index[0]:"yellow",df_vita.index[1]:"#ededed"},hole=0.5)
         figure_vita.update_traces(sort=False,textposition="outside")
