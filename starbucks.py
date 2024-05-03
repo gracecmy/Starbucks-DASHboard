@@ -1,12 +1,14 @@
 import numpy as np
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import dash
-import dash_core_components as dcc 
-import dash_html_components as html
+from dash import dcc, html
 from dash.dependencies import Input,Output
 
+
 #------------------------------------------------------------------
+
 
 #map data and figure
 df_map=pd.read_csv("directory.csv")
@@ -21,6 +23,8 @@ figure_map.update_layout(title={"text":"Find your nearest Starbucks","x":0.5,"y"
 figure_map.update_layout(margin={"t":0,"r":0,"b":0,"l":0})
 figure_map.update_layout({"plot_bgcolor":"rgba(0,0,0,0)","paper_bgcolor":"rgba(0,0,0,0)"})
 figure_map.update_layout(legend={"title":"","orientation":"h","x":0.5,"y":0.97,"xanchor":"center","bgcolor":"rgba(0,0,0,0)"})
+figure_map.update_layout(font_family="Verdana",font_color="#8ABFA6")
+
 
 #drinks data
 df=pd.read_csv("starbucks_drinkMenu_expanded.csv")
@@ -31,7 +35,9 @@ df["Iron (% DV)"]=df["Iron (% DV)"].apply(lambda x:x.split("%")[0])
 df[["Total Fat (g)","Vitamin A (% DV)","Vitamin C (% DV)","Calcium (% DV)","Iron (% DV)","Caffeine (mg)"]]=df[["Total Fat (g)","Vitamin A (% DV)","Vitamin C (% DV)","Calcium (% DV)","Iron (% DV)","Caffeine (mg)"]].astype("float")
 df["Milk"].fillna("No Milk",inplace=True)
 
+
 #------------------------------------------------------------------
+
 
 app=dash.Dash()
 
@@ -39,43 +45,43 @@ app.layout=html.Div([
 
     html.Div([
         html.H1("STARBUCKS",
-                style={"font-family":"Verdana","color":"darkgreen","font-weight":"bold","font-size":"46px","letter-spacing":"7px","height":"50px","padding-top":"30px"}),
-        html.Div("Customise your drink order and discover its nutritional content:",
-                 style={"font-family":"Verdana","color":"darkgreen","font-weight":"bold","font-size":"20px","text-align":"justify"}),
+                style={"font-family":"Verdana","color":"#F2F2F2","font-weight":"bold","font-size":"46px","letter-spacing":"7px","height":"50px","padding-top":"30px"}),
+        html.Div("Customise your drink order and discover its nutritional content.",
+                 style={"font-family":"Verdana","color":"#8ABFA6","font-weight":"bold","font-size":"20px","text-align":"justify"}),
         dcc.Dropdown(id="category_dropdown",options=[{"label":i,"value":i} for i in df["Category"].unique()],placeholder="Select a category",
-                     style={"width":"90%","margin-left":"10px","margin-top":"17px"}),
+                     style={"font-family":"Verdana","width":"90%","margin-left":"10px","margin-top":"17px"}),
         dcc.Dropdown(id="beverage_dropdown",placeholder="Select a beverage",
-                     style={"width":"90%","margin-left":"10px","margin-top":"17px"}),
+                     style={"font-family":"Verdana","width":"90%","margin-left":"10px","margin-top":"17px"}),
         dcc.Dropdown(id="size_dropdown",placeholder="Select a size",
-                     style={"width":"90%","margin-left":"10px","margin-top":"17px"}),
+                     style={"font-family":"Verdana","width":"90%","margin-left":"10px","margin-top":"17px"}),
         dcc.Dropdown(id="milk_dropdown",placeholder="Select a milk option",
-                     style={"width":"90%","margin-left":"10px","margin-top":"17px"}),
+                     style={"font-family":"Verdana","width":"90%","margin-left":"10px","margin-top":"17px"}),
         html.Div("Note: this is not an exhaustive list.",
-                 style={"font-family":"Verdana","color":"darkgreen","font-style":"italic","font-size":"12px","margin-top":"9px"})],
+                 style={"font-family":"Verdana","color":"#8ABFA6","font-style":"italic","font-size":"12px","margin-top":"9px"})],
         style={"display":"inline-block","width":"37%","margin-top":"50px","margin-left":"50px"}),
 
     dcc.Graph(id="map_figure",figure=figure_map,
-              style={"display":"inline-block","width":"53%","vertical-align":"top","margin-top":"50px","padding-top":"25px","padding-left":"25px"}), 
+              style={"display":"inline-block","width":"53%","vertical-align":"top","margin-top":"50px","padding-top":"25px","padding-left":"25px"}),
 
     html.Div(id="drink_output",
-             style={"font-family":"Verdana","color":"darkgreen","font-weight":"bold","font-size":"20px","text-align":"center","width":"85%","margin-left":"auto","margin-right":"auto"}),
+             style={"font-family":"Verdana","color":"#F2F2F2","font-weight":"bold","font-size":"20px","text-align":"center","width":"85%","margin-left":"auto","margin-right":"auto"}),
 
     html.Div([
         html.Div([
             html.Div([
-                html.Div([html.Div("CALORIES",style={"background-color":"lavender","padding-top":"7px","padding-bottom":"7px"}),html.Div(id="calories_output",style={"background-color":"white","padding-top":"7px","padding-bottom":"7px"})],
-                          style={"font-family":"Verdana","text-align":"center","font-size":"18px","border-style":"solid","border-color":"lavender","display":"inline-block","width":"20%","margin-left":"70px","margin-right":"30px"}),
-                html.Div([html.Div("CAFFEINE",style={"background-color":"lavender","padding-top":"7px","padding-bottom":"7px"}),html.Div(id="caffeine_output",style={"background-color":"white","padding-top":"7px","padding-bottom":"7px"})],
-                          style={"font-family":"Verdana","text-align":"center","font-size":"18px","border-style":"solid","border-color":"lavender","display":"inline-block","width":"20%","margin-left":"30px","margin-right":"30px"}),
-                html.Div([html.Div("CHOLESTEROL",style={"background-color":"lavender","padding-top":"7px","padding-bottom":"7px"}),html.Div(id="cholesterol_output",style={"background-color":"white","padding-top":"7px","padding-bottom":"7px"})],
-                          style={"font-family":"Verdana","text-align":"center","font-size":"18px","border-style":"solid","border-color":"lavender","display":"inline-block","width":"20%","margin-left":"30px"})],
+                html.Div([html.Div("CALORIES",style={"background-color":"#017143","padding-top":"7px","padding-bottom":"7px"}),html.Div(id="calories_output",style={"background-color":"#F2F2F2","padding-top":"7px","padding-bottom":"7px"})],
+                          style={"font-family":"Verdana","text-align":"center","font-size":"18px","border-style":"solid","border-color":"#262223","display":"inline-block","width":"20%","margin-left":"70px","margin-right":"30px"}),
+                html.Div([html.Div("CAFFEINE",style={"background-color":"#017143","padding-top":"7px","padding-bottom":"7px"}),html.Div(id="caffeine_output",style={"background-color":"#F2F2F2","padding-top":"7px","padding-bottom":"7px"})],
+                          style={"font-family":"Verdana","text-align":"center","font-size":"18px","border-style":"solid","border-color":"#262223","display":"inline-block","width":"20%","margin-left":"30px","margin-right":"30px"}),
+                html.Div([html.Div("CHOLESTEROL",style={"background-color":"#017143","padding-top":"7px","padding-bottom":"7px"}),html.Div(id="cholesterol_output",style={"background-color":"#F2F2F2","padding-top":"7px","padding-bottom":"7px"})],
+                          style={"font-family":"Verdana","text-align":"center","font-size":"18px","border-style":"solid","border-color":"#262223","display":"inline-block","width":"20%","margin-left":"30px"})],
                 style={"height":"15%"}),
             dcc.Graph(id="nutrition_figure",figure={},
-                    style={"height":"75%"})],
-            style={"display":"inline-block","width":"75%","height":"600px","padding-top":"10px"}),
+                    style={"height":"75%","border-style":"solid","border-color":"#262223"})],
+            style={"display":"inline-block","width":"65%","height":"600px","padding-top":"10px","padding-left":"10px"}),
         html.Div([
-            html.Div("Your drink order contains the following percentages of your RDA:",
-                     style={"font-family":"Verdana","text-align":"center","font-size":"15px"}),
+            html.Div("Recommended Daily Allowance:",
+                     style={"font-family":"Verdana","color":"#262223","text-align":"center","font-size":"18px"}),
             dcc.Graph(id="vita_figure",figure={},
                       style={"height":"20%"}),
             dcc.Graph(id="vitc_figure",figure={},
@@ -84,10 +90,13 @@ app.layout=html.Div([
                       style={"height":"20%"}),
             dcc.Graph(id="iron_figure",figure={},
                       style={"height":"20%"})],
-            style={"display":"inline-block","width":"20%","height":"600px","vertical-align":"top"})],
+            style={"display":"inline-block","width":"30%","height":"600px","vertical-align":"top"})],
         style={"width":"95%","padding-top":"20px","margin-left":"auto","margin-right":"auto","margin-bottom":"50px"})
 
-],style={"background-color":"linen"})
+],style={"background-color":"#0E5936"})
+
+
+#------------------------------------------------------------------
 
 
 #update beverage dropdown options
@@ -145,68 +154,77 @@ def update_drink_output(selected_size,selected_beverage,selected_milk):
      Input(component_id="milk_dropdown",component_property="value")])
 def update_nutritional_figures(selected_category,selected_beverage,selected_size,selected_milk):
     if (selected_category is None)|(selected_beverage is None)|(selected_size is None)|(selected_milk is None):
-        calories="0"
+        calories="0 (cal)"
         caffeine="0 (mg)"
         cholesterol="0 (mg)"
 
         df_empty=pd.DataFrame([["Total Fat (g)",0],["Trans Fat (g)",0],["Saturated Fat (g)",0],["Sodium (mg)",0],["Total Carbohydrates (g)",0],["Dietary Fibre (g)",0],["Sugars (g)",0],["Protein (g)",0]],columns=["Nutrition","Amount"])
-        figure_nutrition=px.bar(data_frame=df_empty,x="Nutrition",y="Amount",color="Nutrition",hover_name="Nutrition",hover_data={"Nutrition":False},labels={"Nutrition":"Nutrition<br>     [Click to remove or<br>doubleclick to highlight<br>a nutrition]"},range_y=[0,10])
-        figure_nutrition.update_layout(xaxis_title="",plot_bgcolor="rgba(0,0,0,0)",paper_bgcolor="rgba(0,0,0,0)")
-        
-        figure_vita=px.pie(values=[100],color_discrete_sequence=["#ededed"],hole=0.5)
+        figure_nutrition=px.bar(data_frame=df_empty,x="Nutrition",y="Amount",color="Nutrition",hover_name="Nutrition",hover_data={"Nutrition":False},range_y=[0,10])
+        figure_nutrition.update_layout(xaxis_title="",plot_bgcolor="#F2F2F2",paper_bgcolor="#F2F2F2",font_family="Verdana",font_color="#262223",showlegend=False)
+
+        figure_vita=go.Figure(data=[go.Pie(labels=["Nil"],values=[100],title="Vitamin A")])
         figure_vita.update_traces(textinfo="none")
         figure_vita.update_layout(hovermode=False,margin={"t":10,"r":10,"b":10,"l":10},plot_bgcolor="rgba(0,0,0,0)",paper_bgcolor="rgba(0,0,0,0)",showlegend=False)
-        figure_vita.add_annotation(x=0.5,y=0.5,showarrow=False,text="Vitamin A",font={"size":18})
+        figure_vita.update_traces(marker=dict(colors=["#F2F2F2"],line=dict(color='#262223',width=2)))
+        figure_vita.update_layout(font_family="Verdana",font_color="#262223",font_size=16)
 
-        figure_vitc=px.pie(values=[100],color_discrete_sequence=["#ededed"],hole=0.5)
+        figure_vitc=go.Figure(data=[go.Pie(labels=["Nil"],values=[100],title="Vitamin C")])
         figure_vitc.update_traces(textinfo="none")
         figure_vitc.update_layout(hovermode=False,margin={"t":10,"r":10,"b":10,"l":10},plot_bgcolor="rgba(0,0,0,0)",paper_bgcolor="rgba(0,0,0,0)",showlegend=False)
-        figure_vitc.add_annotation(x=0.5,y=0.5,showarrow=False,text="Vitamin C",font={"size":18})
+        figure_vitc.update_traces(marker=dict(colors=["#F2F2F2"],line=dict(color='#262223',width=2)))
+        figure_vitc.update_layout(font_family="Verdana",font_color="#262223",font_size=16)
 
-        figure_calci=px.pie(values=[100],color_discrete_sequence=["#ededed"],hole=0.5)
+        figure_calci=go.Figure(data=[go.Pie(labels=["Nil"],values=[100],title="Calcium")])
         figure_calci.update_traces(textinfo="none")
         figure_calci.update_layout(hovermode=False,margin={"t":10,"r":10,"b":10,"l":10},plot_bgcolor="rgba(0,0,0,0)",paper_bgcolor="rgba(0,0,0,0)",showlegend=False)
-        figure_calci.add_annotation(x=0.5,y=0.5,showarrow=False,text="Calcium",font={"size":18})
+        figure_calci.update_traces(marker=dict(colors=["#F2F2F2"],line=dict(color='#262223',width=2)))
+        figure_calci.update_layout(font_family="Verdana",font_color="#262223",font_size=16)
 
-        figure_iron=px.pie(values=[100],color_discrete_sequence=["#ededed"],hole=0.5)
+        figure_iron=go.Figure(data=[go.Pie(labels=["Nil"],values=[100],title="Iron")])
         figure_iron.update_traces(textinfo="none")
         figure_iron.update_layout(hovermode=False,margin={"t":10,"r":10,"b":10,"l":10},plot_bgcolor="rgba(0,0,0,0)",paper_bgcolor="rgba(0,0,0,0)",showlegend=False)
-        figure_iron.add_annotation(x=0.5,y=0.5,showarrow=False,text="Iron",font={"size":18})  
+        figure_iron.update_traces(marker=dict(colors=["#F2F2F2"],line=dict(color='#262223',width=2)))
+        figure_iron.update_layout(font_family="Verdana",font_color="#262223",font_size=16)
+
     else:
         dff=df[(df["Category"]==selected_category)&(df["Beverage"]==selected_beverage)&(df["Size"]==selected_size)&(df["Milk"]==selected_milk)]
 
-        calories="{}".format(int(dff["Calories"]))
+        calories="{} (cal)".format(int(dff["Calories"]))
         caffeine="{} (mg)".format(int(dff["Caffeine (mg)"]))
         cholesterol="{} (mg)".format(int(dff["Cholesterol (mg)"]))
 
         df_nutrition=dff[["Total Fat (g)","Trans Fat (g)","Saturated Fat (g)","Sodium (mg)","Total Carbohydrates (g)","Dietary Fibre (g)","Sugars (g)","Protein (g)"]]
         df_nutrition=df_nutrition.melt(var_name="Nutrition",value_name="Amount")
-        figure_nutrition=px.bar(data_frame=df_nutrition,x="Nutrition",y="Amount",color="Nutrition",hover_name="Nutrition",hover_data={"Nutrition":False},labels={"Nutrition":"Nutrition<br>     [Click to remove or<br>doubleclick to highlight<br>a nutrition]"})
-        figure_nutrition.update_layout(xaxis_title="",plot_bgcolor="rgba(0,0,0,0)",paper_bgcolor="rgba(0,0,0,0)")
-        
+        figure_nutrition=px.bar(data_frame=df_nutrition,x="Nutrition",y="Amount",color="Nutrition",hover_name="Nutrition",hover_data={"Nutrition":False})
+        figure_nutrition.update_layout(xaxis_title="",plot_bgcolor="#F2F2F2",paper_bgcolor="#F2F2F2",font_family="Verdana",font_color="#262223",showlegend=False)
+
         df_vita=pd.DataFrame(data=[int(dff["Vitamin A (% DV)"]),100-int(dff["Vitamin A (% DV)"])],index=["Vit","Nil"],columns=["Percent"])
-        figure_vita=px.pie(data_frame=df_vita,names=df_vita.index,values="Percent",color=df_vita.index,color_discrete_map={df_vita.index[0]:"yellow",df_vita.index[1]:"#ededed"},hole=0.5)
-        figure_vita.update_traces(sort=False,textposition="outside")
+        figure_vita=go.Figure(data=[go.Pie(labels=df_vita.index,values=df_vita["Percent"],title="Vitamin A")])
+        figure_vita.update_traces(sort=False,textposition="inside")
         figure_vita.update_layout(hovermode=False,margin={"t":10,"r":10,"b":10,"l":10},plot_bgcolor="rgba(0,0,0,0)",paper_bgcolor="rgba(0,0,0,0)",showlegend=False)
-        figure_vita.add_annotation(x=0.5,y=0.5,showarrow=False,text="Vitamin A",font={"size":18})
+        figure_vita.update_traces(marker=dict(colors=["yellow","#F2F2F2"],line=dict(color='#262223',width=2)))
+        figure_vita.update_layout(font_family="Verdana",font_color="#262223",font_size=16)
 
         df_vitc=pd.DataFrame(data=[int(dff["Vitamin C (% DV)"]),100-int(dff["Vitamin C (% DV)"])],index=["Vit","Nil"],columns=["Percent"])
-        figure_vitc=px.pie(data_frame=df_vitc,names=df_vitc.index,values="Percent",color=df_vitc.index,color_discrete_map={df_vitc.index[0]:"yellow",df_vitc.index[1]:"#ededed"},hole=0.5)
-        figure_vitc.update_traces(sort=False,textposition="outside")
+        figure_vitc=go.Figure(data=[go.Pie(labels=df_vitc.index,values=df_vitc["Percent"],title="Vitamin C")])
+        figure_vitc.update_traces(sort=False,textposition="inside")
         figure_vitc.update_layout(hovermode=False,margin={"t":10,"r":10,"b":10,"l":10},plot_bgcolor="rgba(0,0,0,0)",paper_bgcolor="rgba(0,0,0,0)",showlegend=False)
-        figure_vitc.add_annotation(x=0.5,y=0.5,showarrow=False,text="Vitamin C",font={"size":18})
+        figure_vitc.update_traces(marker=dict(colors=["yellow","#F2F2F2"],line=dict(color='#262223',width=2)))
+        figure_vitc.update_layout(font_family="Verdana",font_color="#262223",font_size=16)
 
         df_calci=pd.DataFrame(data=[int(dff["Calcium (% DV)"]),100-int(dff["Calcium (% DV)"])],index=["Vit","Nil"],columns=["Percent"])
-        figure_calci=px.pie(data_frame=df_calci,names=df_calci.index,values="Percent",color=df_calci.index,color_discrete_map={df_calci.index[0]:"yellow",df_calci.index[1]:"#ededed"},hole=0.5)
-        figure_calci.update_traces(sort=False,textposition="outside")
+        figure_calci=go.Figure(data=[go.Pie(labels=df_calci.index,values=df_calci["Percent"],title="Calcium")])
+        figure_calci.update_traces(sort=False,textposition="inside")
         figure_calci.update_layout(hovermode=False,margin={"t":10,"r":10,"b":10,"l":10},plot_bgcolor="rgba(0,0,0,0)",paper_bgcolor="rgba(0,0,0,0)",showlegend=False)
-        figure_calci.add_annotation(x=0.5,y=0.5,showarrow=False,text="Calcium",font={"size":18})
+        figure_calci.update_traces(marker=dict(colors=["yellow","#F2F2F2"],line=dict(color='#262223',width=2)))
+        figure_calci.update_layout(font_family="Verdana",font_color="#262223",font_size=16)
 
         df_iron=pd.DataFrame(data=[int(dff["Iron (% DV)"]),100-int(dff["Iron (% DV)"])],index=["Vit","Nil"],columns=["Percent"])
-        figure_iron=px.pie(data_frame=df_iron,names=df_iron.index,values="Percent",color=df_iron.index,color_discrete_map={df_iron.index[0]:"yellow",df_iron.index[1]:"#ededed"},hole=0.5)
-        figure_iron.update_traces(sort=False,textposition="outside")
+        figure_iron=go.Figure(data=[go.Pie(labels=df_iron.index,values=df_iron["Percent"],title="Iron")])
+        figure_iron.update_traces(sort=False,textposition="inside")
         figure_iron.update_layout(hovermode=False,margin={"t":10,"r":10,"b":10,"l":10},plot_bgcolor="rgba(0,0,0,0)",paper_bgcolor="rgba(0,0,0,0)",showlegend=False)
-        figure_iron.add_annotation(x=0.5,y=0.5,showarrow=False,text="Iron",font={"size":18})
+        figure_iron.update_traces(marker=dict(colors=["yellow","#F2F2F2"],line=dict(color='#262223',width=2)))
+        figure_iron.update_layout(font_family="Verdana",font_color="#262223",font_size=16)
     return calories,caffeine,cholesterol,figure_nutrition,figure_vita,figure_vitc,figure_calci,figure_iron
 
 
