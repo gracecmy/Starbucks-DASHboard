@@ -1,1 +1,1 @@
-![ScreenShot](/extras/screenshot.png)
+![ScreenShot](/extras/screenshot_local.png)
