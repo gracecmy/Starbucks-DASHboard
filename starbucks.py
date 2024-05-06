@@ -107,13 +107,13 @@ app.layout = html.Div([
 
             html.Div([
 
-                html.Div([html.Div("CALORIES (cal)",style={"background-color":"#017143","padding-top":"7px","padding-bottom":"7px"}),html.Div(id="calories_output",style={"background-color":"#F2F2F2","padding-top":"7px","padding-bottom":"7px"})],
+                html.Div([html.Div("CALORIES",style={"background-color":"#017143","padding-top":"7px","padding-bottom":"7px"}),html.Div(id="calories_output",style={"background-color":"#F2F2F2","padding-top":"7px","padding-bottom":"7px"})],
                 style={"font-family":"Verdana","text-align":"center","font-size":"18px","border-style":"solid","border-color":"#262223","display":"inline-block","width":"20%","margin-left":"70px","margin-right":"30px"}),
 
-                html.Div([html.Div("CAFFEINE (mg)",style={"background-color":"#017143","padding-top":"7px","padding-bottom":"7px"}),html.Div(id="caffeine_output",style={"background-color":"#F2F2F2","padding-top":"7px","padding-bottom":"7px"})],
+                html.Div([html.Div("CAFFEINE",style={"background-color":"#017143","padding-top":"7px","padding-bottom":"7px"}),html.Div(id="caffeine_output",style={"background-color":"#F2F2F2","padding-top":"7px","padding-bottom":"7px"})],
                 style={"font-family":"Verdana","text-align":"center","font-size":"18px","border-style":"solid","border-color":"#262223","display":"inline-block","width":"20%","margin-left":"30px","margin-right":"30px"}),
 
-                html.Div([html.Div("CHOLESTEROL (mg)",style={"background-color":"#017143","padding-top":"7px","padding-bottom":"7px"}),html.Div(id="cholesterol_output",style={"background-color":"#F2F2F2","padding-top":"7px","padding-bottom":"7px"})],
+                html.Div([html.Div("CHOLESTEROL",style={"background-color":"#017143","padding-top":"7px","padding-bottom":"7px"}),html.Div(id="cholesterol_output",style={"background-color":"#F2F2F2","padding-top":"7px","padding-bottom":"7px"})],
                 style={"font-family":"Verdana","text-align":"center","font-size":"18px","border-style":"solid","border-color":"#262223","display":"inline-block","width":"20%","margin-left":"30px"})],
 
             style={"height":"15%"}),
@@ -214,9 +214,9 @@ def update_nutritional_figures(selected_category,selected_beverage,selected_size
         df_empty_nutrition = pd.DataFrame([["Total Fat (g)",0],["Trans Fat (g)",0],["Saturated Fat (g)",0],["Sodium (mg)",0],["Total Carbohydrates (g)",0],["Dietary Fibre (g)",0],["Sugars (g)",0],["Protein (g)",0]],columns=["Nutrition","Amount"])
         df_empty_pie = pd.DataFrame(data=[0,100],index=["Vit","Nil"],columns=["Percent"])
 
-        calories = "0"
-        caffeine = "0"
-        cholesterol = "0"
+        calories = "0 cal"
+        caffeine = "0 mg"
+        cholesterol = "0 mg"
 
         figure_nutrition = figure_bar(df_empty_nutrition)
 
@@ -231,9 +231,9 @@ def update_nutritional_figures(selected_category,selected_beverage,selected_size
     else:
         dff = df[(df["Category"]==selected_category)&(df["Beverage"]==selected_beverage)&(df["Size"]==selected_size)&(df["Milk"]==selected_milk)]
 
-        calories = "{}".format(int(dff["Calories"]))
-        caffeine = "{}".format(int(dff["Caffeine (mg)"]))
-        cholesterol = "{}".format(int(dff["Cholesterol (mg)"]))
+        calories = "{} cal".format(int(dff["Calories"]))
+        caffeine = "{} mg".format(int(dff["Caffeine (mg)"]))
+        cholesterol = "{} mg".format(int(dff["Cholesterol (mg)"]))
 
         df_nutrition = dff[["Total Fat (g)","Trans Fat (g)","Saturated Fat (g)","Sodium (mg)","Total Carbohydrates (g)","Dietary Fibre (g)","Sugars (g)","Protein (g)"]]
         df_nutrition = df_nutrition.melt(var_name="Nutrition",value_name="Amount")
