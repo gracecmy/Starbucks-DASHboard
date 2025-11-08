@@ -1,258 +1,244 @@
+##-------import packages--------------------------------------------------------
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import plotly.colors
 import dash
 from dash import dcc, html
 from dash.dependencies import Input,Output
 
 
-#------------------------------------------------------------------
+
+##--------import data-----------------------------------------------------------
+# drinks data
+df_drinks = pd.read_csv("starbucks_drinkMenu_expanded.csv")
+df_drinks = df_drinks[df_drinks["Category"]!="Frappuccino® Light Blended Coffee"]
+df_drinks["Beverage"] = df_drinks.apply(lambda row: row["Beverage"]+" Frappucino" if "Frappuccino" in row["Category"] else row["Beverage"], axis=1)
+df_drinks = df_drinks.drop(["Category","Trans Fat (g)","Saturated Fat (g)","Sodium (mg)","Dietary Fibre (g)","Vitamin A (% DV)","Vitamin C (% DV)","Calcium (% DV)","Iron (% DV)"], axis=1)
+df_drinks["Milk"] = df_drinks["Milk"].fillna("No Milk")
 
 
 # map data
 df_map = pd.read_csv("directory.csv")
-df_map.drop(df_map.loc[df_map["Brand"]=="Teavana"].index,inplace=True)
-df_map["Phone Number"].fillna("n/a",inplace=True)
-df_map["Postcode"].fillna(".",inplace=True)
-df_map["Address"] = np.where(df_map["Postcode"]==".",(df_map["Street Address"]+", "+df_map["City"]),(df_map["Street Address"]+", "+df_map["City"]+", "+df_map["Postcode"]))
-df_map.drop(["Brand","Store Number","Street Address","City","State/Province","Country","Postcode","Timezone"],axis=1,inplace=True)
-df_ma = df_map.reindex(columns=["Store Name","Address","Phone Number","Ownership Type","Latitude","Longitude"])
-
-# drinks data
-df = pd.read_csv("starbucks_drinkMenu_expanded.csv")
-df["Vitamin A (% DV)"] = df["Vitamin A (% DV)"].apply(lambda x:x.split("%")[0])
-df["Vitamin C (% DV)"] = df["Vitamin C (% DV)"].apply(lambda x:x.split("%")[0])
-df["Calcium (% DV)"] = df["Calcium (% DV)"].apply(lambda x:x.split("%")[0])
-df["Iron (% DV)"] = df["Iron (% DV)"].apply(lambda x:x.split("%")[0])
-df[["Total Fat (g)","Vitamin A (% DV)","Vitamin C (% DV)","Calcium (% DV)","Iron (% DV)","Caffeine (mg)"]]=df[["Total Fat (g)","Vitamin A (% DV)","Vitamin C (% DV)","Calcium (% DV)","Iron (% DV)","Caffeine (mg)"]].astype("float")
-df["Milk"].fillna("No Milk",inplace=True)
+df_map = df_map.drop(df_map.loc[df_map["Brand"]=="Teavana"].index)
+df_map["Phone Number"] = df_map["Phone Number"].fillna("n/a")
+df_map["Postcode"] = df_map["Postcode"].fillna(".")
+df_map["Address"]= np.where(df_map["Postcode"]==".",(df_map["Street Address"]+", "+df_map["City"]),(df_map["Street Address"]+", "+df_map["City"]+", "+df_map["Postcode"]))
+df_map = df_map.drop(["Brand","Store Number","Street Address","City","State/Province","Country","Postcode","Timezone"], axis=1)
+df_map = df_map.reindex(columns=["Store Name","Address","Phone Number","Ownership Type","Latitude","Longitude"])
 
 
-#------------------------------------------------------------------
+
+##--------create functions------------------------------------------------------
+def draw_bar(dataframe):
+    text_labels = [str(val) for val in dataframe["Amount"]]
+    max_range = int(max(dataframe["Amount"]))+10
+    colors = ["#EAD2AC","#C47335","#A63D40","#6C8EAD"]
+    figure = go.Figure(data=[go.Bar(x=dataframe["Nutrition"], y=dataframe["Amount"])])
+    figure.update_layout(yaxis_range=[0,max_range], xaxis_title="", plot_bgcolor="#F2F2F2", paper_bgcolor="#F2F2F2", font_family="Verdana", font_color="#000000", showlegend=False, hovermode=False)
+    figure.update_traces(marker=dict(color=colors,line=dict(color="#000000",width=2)), text=text_labels, textposition="outside")
+    figure.update_layout(font_family="Verdana",font_color="#000000")
+    return figure
+
+
+
+##-------create static data-----------------------------------------------------
+# beverage options
+set_beverage_options = [{"label":i,"value":i} for i in df_drinks["Beverage"].unique()]
 
 
 # map figure
-figure_map = px.scatter_geo(data_frame=df_map,lat="Latitude",lon="Longitude",color="Ownership Type",color_discrete_map={"Licensed":"#bcbd22","Joint Venture":"#d62728","Company Owned":"#17becf","Franchise":"#1f77b4"},hover_name="Store Name",hover_data={"Address":True,"Phone Number":True,"Ownership Type":False,"Longitude":False,"Latitude":False},template="ggplot2")
-figure_map.update_layout(title={"text":"Find your nearest Starbucks","x":0.5,"y":1,"xanchor":"center","yanchor":"top"},font={"size":12})
+figure_map = px.scatter_geo(data_frame=df_map,lat="Latitude",lon="Longitude",color="Ownership Type",color_discrete_map={"Licensed":"#293644","Joint Venture":"#C08552","Company Owned":"#774936","Franchise":"#629AA1"},hover_name="Store Name",hover_data={"Address":True,"Phone Number":True,"Ownership Type":False,"Longitude":False,"Latitude":False},template="ggplot2")
 figure_map.update_layout(margin={"t":0,"r":0,"b":0,"l":0})
 figure_map.update_layout({"plot_bgcolor":"rgba(0,0,0,0)","paper_bgcolor":"rgba(0,0,0,0)"})
-figure_map.update_layout(legend={"title":"","orientation":"h","x":0.5,"y":0.97,"xanchor":"center","bgcolor":"rgba(0,0,0,0)"})
-figure_map.update_layout(font_family="Verdana",font_color="#8ABFA6")
+figure_map.update_layout(legend={"title":"","orientation":"h","xanchor":"center","x":0.5,"yanchor":"bottom","y":1,"bgcolor":"rgba(0,0,0,0)"})
 
 
-# bar chart
-def figure_bar(dataframe):
-    colors = plotly.colors.qualitative.Plotly
-    text_labels = [str(val) for val in dataframe["Amount"]]
-    min_range = int(max(dataframe["Amount"]))+10
-    figure = go.Figure(data=[go.Bar(x=dataframe["Nutrition"],y=dataframe["Amount"])])
-    figure.update_traces(marker=dict(color=colors,line=dict(color='#262223',width=2)),text=text_labels,textposition="outside",)
-    figure.update_layout(yaxis_range=[0,min_range],xaxis_title="",hovermode=False,showlegend=False,plot_bgcolor="#F2F2F2",paper_bgcolor="#F2F2F2")
-    figure.update_layout(font_family="Verdana",font_color="#262223")
-    return figure
 
-
-# pie charts
-def figure_pie(dataframe,title):
-    figure = go.Figure(data=[go.Pie(labels=dataframe.index,values=dataframe["Percent"],title=title)])
-    figure.update_traces(marker=dict(colors=["yellow","#F2F2F2"],line=dict(color='#262223',width=2)),sort=False,textposition="inside")
-    figure.update_layout(hovermode=False,showlegend=False,margin={"t":10,"r":10,"b":10,"l":10},plot_bgcolor="rgba(0,0,0,0)",paper_bgcolor="rgba(0,0,0,0)")
-    figure.update_layout(font_family="Verdana",font_color="#F2F2F2",font_size=16)
-    return figure
-
-
-#------------------------------------------------------------------
-
-
+##-------------layout-----------------------------------------------------------
 app = dash.Dash()
 
-app.layout = html.Div([
+app.layout = html.Div(
+    style={"width":"55%",
+           "margin":"auto",
+           "background-color":"#006241",
+           "padding":"2rem",
+           "font-family":"Verdana"},
+    children=[
+        # --- HEADER SECTION ---
+        html.Div(className="dashboard-header",
+                 style={"text-align":"center",
+                        "margin-bottom":"100px",
+                        "padding-top":"120px"},
+                 children=[html.H1("Drink a Smarter Starbucks",
+                                   style={"color":"#FFFFFF",
+                                          "font-weight":"bold",
+                                          "font-size":"80px",
+                                          "letter-spacing":"5px",
+                                          "margin-bottom":"20px"}),
+                           html.P("Discover what’s in your cup, one sip (and dataset) at a time.",
+                                  style={"font-size":"24px",
+                                         "font-weight":"lighter",
+                                         "color":"#DFF9BA"})]),
 
-    html.Div([
+        # --- SECTION 1: Customize Your Drink ---
+        html.Div(
+            style={"background-color":"#FFFFFF",
+                   "border-radius":"12px",
+                   "padding":"2rem",
+                   "margin-bottom":"100px",
+                   "box-shadow":"0 2px 10px rgba(0,0,0,0.1)"},
+            children=[html.H2("1️⃣ Customize Your Drink",
+                              style={"color":"#000000",
+                                     "margin-bottom":"10px"}),
+                      html.P("Pick your go-to Starbucks beverage and make it yours.",
+                             style={"color":"#000000",
+                                    "margin-bottom":"20px"}),
+                      dcc.Dropdown(id="beverage_dropdown",
+                                   options=set_beverage_options,
+                                   placeholder="Select a beverage",
+                                   style={"width":"85%",
+                                          "margin-bottom":"10px"}),
+                      html.Div(children=[html.Div(id="size_text",
+                                                  style={"font-style": "italic"}),
+                                         dcc.RadioItems(id="size_dropdown",
+                                                        style={"margin-bottom":"10px"})]),
+                      html.Div(children=[html.Div(id="milk_text",
+                                                  style={"font-style": "italic"}),
+                                         dcc.RadioItems(id="milk_dropdown",
+                                                        style={"margin-bottom":"20px"},)]),
+                      html.Div(id="drink_order",
+                               style={"text-align":"center",
+                                      "font-weight":"bold",
+                                      "color":"#1E3932",
+                                      "font-size":"20px"})]),
 
-        html.H1("STARBUCKS",
-        style={"font-family":"Verdana","color":"#F2F2F2","font-weight":"bold","font-size":"46px","letter-spacing":"7px","height":"50px","padding-top":"30px"}),
+        # --- SECTION 2: Nutritional Content ---
+        html.Div(
+            style={"background-color":"#FFFFFF",
+                   "border-radius":"12px",
+                   "padding":"2rem",
+                   "margin-bottom":"100px",
+                   "box-shadow":"0 2px 10px rgba(0,0,0,0.1)"},
+            children=[html.H2("2️⃣ Check Out the Nutritional Content",
+                              style={"color":"#000000",
+                                     "margin-bottom":"10px"}),
+                      html.P("See what’s really brewing inside — calories, caffeine and more.",
+                             style={"color":"#000000",
+                                    "margin-bottom":"20px"}),
+                      html.Div(style={"display":"flex",
+                                      "justify-content":"center",
+                                      "align-items":"center",
+                                      "gap":"40px",
+                                      "margin-bottom":"20px",
+                                      "font-weight":"bold"},
+                               children=[html.Div(id="calories_output"),
+                                         html.Div(id="caffeine_output")]),
+                      dcc.Graph(id="nutrition_output")]),
 
-        html.Div("Customise your drink order and discover its nutritional content.",
-        style={"font-family":"Verdana","color":"#8ABFA6","font-weight":"bold","font-size":"20px","text-align":"justify"}),
-
-        dcc.Dropdown(id="category_dropdown",options=[{"label":i,"value":i} for i in df["Category"].unique()],placeholder="Select a category",
-        style={"font-family":"Verdana","width":"90%","margin-left":"10px","margin-top":"17px"}),
-
-        dcc.Dropdown(id="beverage_dropdown",placeholder="Select a beverage",
-        style={"font-family":"Verdana","width":"90%","margin-left":"10px","margin-top":"17px"}),
-
-        dcc.Dropdown(id="size_dropdown",placeholder="Select a size",
-        style={"font-family":"Verdana","width":"90%","margin-left":"10px","margin-top":"17px"}),
-
-        dcc.Dropdown(id="milk_dropdown",placeholder="Select a milk option",
-        style={"font-family":"Verdana","width":"90%","margin-left":"10px","margin-top":"17px"}),
-
-        html.Div("Note: this is not an exhaustive list.",
-        style={"font-family":"Verdana","color":"#8ABFA6","font-style":"italic","font-size":"12px","margin-top":"9px"})],
-
-    style={"display":"inline-block","width":"37%","margin-top":"50px","margin-left":"50px"}),
-
-    dcc.Graph(id="map_figure",figure=figure_map,
-    style={"display":"inline-block","width":"53%","vertical-align":"top","margin-top":"50px","padding-top":"25px","padding-left":"25px"}),
-
-    html.Div(id="drink_output",
-    style={"font-family":"Verdana","color":"#F2F2F2","font-weight":"bold","font-size":"20px","text-align":"center","width":"85%","margin-left":"auto","margin-right":"auto"}),
-
-    html.Div([
-
-        html.Div([
-
-            html.Div([
-
-                html.Div([html.Div("CALORIES",style={"background-color":"#017143","padding-top":"7px","padding-bottom":"7px"}),html.Div(id="calories_output",style={"background-color":"#F2F2F2","padding-top":"7px","padding-bottom":"7px"})],
-                style={"font-family":"Verdana","text-align":"center","font-size":"18px","border-style":"solid","border-color":"#262223","display":"inline-block","width":"20%","margin-left":"70px","margin-right":"30px"}),
-
-                html.Div([html.Div("CAFFEINE",style={"background-color":"#017143","padding-top":"7px","padding-bottom":"7px"}),html.Div(id="caffeine_output",style={"background-color":"#F2F2F2","padding-top":"7px","padding-bottom":"7px"})],
-                style={"font-family":"Verdana","text-align":"center","font-size":"18px","border-style":"solid","border-color":"#262223","display":"inline-block","width":"20%","margin-left":"30px","margin-right":"30px"}),
-
-                html.Div([html.Div("CHOLESTEROL",style={"background-color":"#017143","padding-top":"7px","padding-bottom":"7px"}),html.Div(id="cholesterol_output",style={"background-color":"#F2F2F2","padding-top":"7px","padding-bottom":"7px"})],
-                style={"font-family":"Verdana","text-align":"center","font-size":"18px","border-style":"solid","border-color":"#262223","display":"inline-block","width":"20%","margin-left":"30px"})],
-
-            style={"height":"15%"}),
-
-            dcc.Graph(id="nutrition_figure",figure={},
-            style={"height":"75%","border-style":"solid","border-color":"#262223"})],
-
-        style={"display":"inline-block","width":"65%","height":"600px","padding-top":"10px","padding-left":"10px"}),
-
-        html.Div([
-
-            html.Div("Recommended Daily Allowance:",
-            style={"font-family":"Verdana","color":"#262223","text-align":"center","font-size":"18px"}),
-
-            dcc.Graph(id="vita_figure",figure={},
-            style={"height":"20%"}),
-
-            dcc.Graph(id="vitc_figure",figure={},
-            style={"height":"20%"}),
-
-            dcc.Graph(id="calci_figure",figure={},
-            style={"height":"20%"}),
-
-            dcc.Graph(id="iron_figure",figure={},
-            style={"height":"20%"})],
-
-        style={"display":"inline-block","width":"30%","height":"600px","vertical-align":"top"})],
-
-    style={"width":"95%","padding-top":"20px","margin-left":"auto","margin-right":"auto","margin-bottom":"50px"})
-
-],style={"background-color":"#0E5936"})
+        # --- SECTION 3: Find Nearest Location ---
+        html.Div(
+            style={"background-color":"#FFFFFF",
+                   "border-radius":"12px",
+                   "padding":"2rem",
+                   "box-shadow":"0 2px 10px rgba(0,0,0,0.1)"},
+            children=[html.H2("3️⃣ Find Your Nearest Location",
+                              style={"color":"#000000",
+                                     "margin-bottom":"10px"}),
+                      html.P("Craving it now? Locate your closest Starbucks and sip smarter in person.",
+                             style={"color":"#000000",
+                                    "margin-bottom":"20px"}),
+                      dcc.Graph(id="map", figure=figure_map)])])
 
 
-#------------------------------------------------------------------
 
-
-#update beverage dropdown options
+##------------call backs--------------------------------------------------------
+# update size options
 @app.callback(
-    Output("beverage_dropdown","options"),
-    [Input("category_dropdown","value")])
-
-def set_beverage_options(selected_category):
-    return [{"label":i,"value":i} for i in df[df["Category"]==selected_category]["Beverage"].unique()]
-
-
-#update size dropdown options
-@app.callback(
-    Output("size_dropdown","options"),
+    [Output("size_text","children"),
+     Output("size_dropdown","options")],
     [Input("beverage_dropdown","value")])
 
 def set_size_options(selected_beverage):
-    return [{"label":i,"value":i} for i in df[df["Beverage"]==selected_beverage]["Size"].unique()]
+    if (selected_beverage is None):
+        text = ""
+
+    else:
+        text = "Select a size:"
+
+    dropdown = [{"label":i, "value":i} for i in df_drinks[df_drinks["Beverage"]==selected_beverage]["Size"].unique()]
+
+    return text, dropdown
 
 
-#update milk dropdown options
+# update milk options
 @app.callback(
-    Output("milk_dropdown","options"),
+    [Output("milk_text","children"),
+     Output("milk_dropdown","options")],
     [Input("size_dropdown","value"),
      Input("beverage_dropdown","value")])
 
 def set_milk_options(selected_size,selected_beverage):
-    return [{"label":i,"value":i} for i in df[(df["Size"]==selected_size)&(df["Beverage"]==selected_beverage)]["Milk"].unique()]
+    if (selected_size is None)|(selected_beverage is None):
+        text = ""
+
+    else:
+        text = "Select a milk:"
+
+    dropdown = [{"label":i, "value":i} for i in df_drinks[(df_drinks["Size"]==selected_size) & (df_drinks["Beverage"]==selected_beverage)]["Milk"].unique()]
+
+    return text, dropdown
 
 
-#update chosen drink
+# update selected drink
 @app.callback(
-    Output(component_id="drink_output",component_property="children"),
+    Output(component_id="drink_order",component_property="children"),
     [Input(component_id="size_dropdown",component_property="value"),
      Input(component_id="beverage_dropdown",component_property="value"),
      Input(component_id="milk_dropdown",component_property="value")])
+
 def update_drink_output(selected_size,selected_beverage,selected_milk):
     if (selected_size is None)|(selected_beverage is None)|(selected_milk is None):
-        container="You have not made or completed your drink order."
+        drink ="You have not made or completed your drink order."
 
     else:
-        container="Your drink order is a {size} {beverage} with {milk}.".format(size=selected_size,beverage=selected_beverage,milk=selected_milk)
+        drink ="Your drink order is a {size} {beverage} with {milk}.".format(size=selected_size, beverage=selected_beverage, milk=selected_milk)
 
-    return container
+    return drink
 
 
-#update all figures
+# update nutrition
 @app.callback(
     [Output(component_id="calories_output",component_property="children"),
      Output(component_id="caffeine_output",component_property="children"),
-     Output(component_id="cholesterol_output",component_property="children"),
-     Output(component_id="nutrition_figure",component_property="figure"),
-     Output(component_id="vita_figure",component_property="figure"),
-     Output(component_id="vitc_figure",component_property="figure"),
-     Output(component_id="calci_figure",component_property="figure"),
-     Output(component_id="iron_figure",component_property="figure")],
-    [Input(component_id="category_dropdown",component_property="value"),
-     Input(component_id="beverage_dropdown",component_property="value"),
+     Output(component_id="nutrition_output",component_property="figure")],
+    [Input(component_id="beverage_dropdown",component_property="value"),
      Input(component_id="size_dropdown",component_property="value"),
      Input(component_id="milk_dropdown",component_property="value")])
 
-def update_nutritional_figures(selected_category,selected_beverage,selected_size,selected_milk):
-    if (selected_category is None)|(selected_beverage is None)|(selected_size is None)|(selected_milk is None):
-        df_empty_nutrition = pd.DataFrame([["Total Fat (g)",0],["Trans Fat (g)",0],["Saturated Fat (g)",0],["Sodium (mg)",0],["Total Carbohydrates (g)",0],["Dietary Fibre (g)",0],["Sugars (g)",0],["Protein (g)",0]],columns=["Nutrition","Amount"])
-        df_empty_pie = pd.DataFrame(data=[0,100],index=["Vit","Nil"],columns=["Percent"])
+def update_nutritional_figures(selected_beverage,selected_size,selected_milk):
+    if (selected_beverage is None)|(selected_size is None)|(selected_milk is None):
+        df_empty = pd.DataFrame([["Total Fat (g)",0],["Total Carbohydrates (g)",0],["Sugars (g)",0],["Protein (g)",0]], columns=["Nutrition","Amount"])
 
-        calories = "0 cal"
-        caffeine = "0 mg"
-        cholesterol = "0 mg"
+        calories = "0 calories"
+        caffeine = "0 mg of caffeine"
 
-        figure_nutrition = figure_bar(df_empty_nutrition)
-
-        figure_vita = figure_pie(df_empty_pie,"Vitamin A")
-
-        figure_vitc = figure_pie(df_empty_pie,"Vitamin C")
-
-        figure_calci = figure_pie(df_empty_pie,"Calcium")
-
-        figure_iron = figure_pie(df_empty_pie,"Iron")
+        nutrition = draw_bar(df_empty)
 
     else:
-        dff = df[(df["Category"]==selected_category)&(df["Beverage"]==selected_beverage)&(df["Size"]==selected_size)&(df["Milk"]==selected_milk)]
+        df_selection = df_drinks[(df_drinks["Beverage"]==selected_beverage) & (df_drinks["Size"]==selected_size) & (df_drinks["Milk"]==selected_milk)]
 
-        calories = "{} cal".format(int(dff["Calories"]))
-        caffeine = "{} mg".format(int(dff["Caffeine (mg)"]))
-        cholesterol = "{} mg".format(int(dff["Cholesterol (mg)"]))
+        calories = "{} calories".format(df_selection["Calories"].iloc[0])
+        caffeine = "{} mg of caffeine".format(df_selection["Caffeine (mg)"].iloc[0])
 
-        df_nutrition = dff[["Total Fat (g)","Trans Fat (g)","Saturated Fat (g)","Sodium (mg)","Total Carbohydrates (g)","Dietary Fibre (g)","Sugars (g)","Protein (g)"]]
-        df_nutrition = df_nutrition.melt(var_name="Nutrition",value_name="Amount")
-        figure_nutrition = figure_bar(df_nutrition)
+        df_selection = df_selection[["Total Fat (g)","Total Carbohydrates (g)","Sugars (g)","Protein (g)"]]
+        df_selection = df_selection.melt(var_name="Nutrition", value_name="Amount")
+        nutrition = draw_bar(df_selection)
 
-        df_vita = pd.DataFrame(data=[int(dff["Vitamin A (% DV)"]),100-int(dff["Vitamin A (% DV)"])],index=["Vit","Nil"],columns=["Percent"])
-        figure_vita = figure_pie(df_vita,"Vitamin A")
-
-        df_vitc = pd.DataFrame(data=[int(dff["Vitamin C (% DV)"]),100-int(dff["Vitamin C (% DV)"])],index=["Vit","Nil"],columns=["Percent"])
-        figure_vitc = figure_pie(df_vitc,"Vitamin C")
-
-        df_calci = pd.DataFrame(data=[int(dff["Calcium (% DV)"]),100-int(dff["Calcium (% DV)"])],index=["Vit","Nil"],columns=["Percent"])
-        figure_calci = figure_pie(df_calci,"Calcium")
-
-        df_iron = pd.DataFrame(data=[int(dff["Iron (% DV)"]),100-int(dff["Iron (% DV)"])],index=["Vit","Nil"],columns=["Percent"])
-        figure_iron = figure_pie(df_iron,"Iron")
-
-    return calories,caffeine,cholesterol,figure_nutrition,figure_vita,figure_vitc,figure_calci,figure_iron
+    return calories, caffeine, nutrition
 
 
+
+##-----------run----------------------------------------------------------------
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run(debug=True)
