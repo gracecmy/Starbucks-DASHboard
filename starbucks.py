@@ -65,7 +65,7 @@ app.layout = html.Div(
            "padding":"2rem",
            "font-family":"Verdana"},
     children=[
-        # --- HEADER SECTION ---
+        #header
         html.Div(className="dashboard-header",
                  style={"text-align":"center",
                         "margin-bottom":"100px",
@@ -81,7 +81,7 @@ app.layout = html.Div(
                                          "font-weight":"lighter",
                                          "color":"#DFF9BA"})]),
 
-        # --- SECTION 1: Customize Your Drink ---
+        #section 1: customization
         html.Div(
             style={"background-color":"#FFFFFF",
                    "border-radius":"12px",
@@ -113,7 +113,7 @@ app.layout = html.Div(
                                       "color":"#1E3932",
                                       "font-size":"20px"})]),
 
-        # --- SECTION 2: Nutritional Content ---
+        #section 2: results
         html.Div(
             style={"background-color":"#FFFFFF",
                    "border-radius":"12px",
@@ -136,7 +136,7 @@ app.layout = html.Div(
                                          html.Div(id="caffeine_output")]),
                       dcc.Graph(id="nutrition_output")]),
 
-        # --- SECTION 3: Find Nearest Location ---
+        #section 3: map
         html.Div(
             style={"background-color":"#FFFFFF",
                    "border-radius":"12px",
